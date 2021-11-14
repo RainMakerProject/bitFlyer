@@ -31,3 +31,27 @@ class State(enum.Enum):
     CIRCUIT_BREAK = enum.auto()
     AWAITING_SQ = enum.auto()
     MATURED = enum.auto()
+
+
+class Candlestick(enum.Enum):
+    ONE_MINUTE: int = 60
+    FIVE_MINUTES = ONE_MINUTE * 5
+    TEN_MINUTES = ONE_MINUTE * 10
+    FIFTEEN_MINUTES = ONE_MINUTE * 15
+    THIRTY_MINUTES = ONE_MINUTE * 30
+
+    ONE_HOUR: int = ONE_MINUTE * 60
+    FOUR_HOURS = ONE_HOUR * 4
+    EIGHT_HOURS = ONE_HOUR * 8
+
+    ONE_DAY: int = ONE_HOUR * 24
+    ONE_WEEK = ONE_DAY * 7
+
+
+chart_types = []
+for p in ProductCode:
+    for c in Candlestick:
+        chart_types.append((f'{p.name}_{c.name}', enum.auto()))
+
+
+ChartType = enum.Enum('ChartType', chart_types)
