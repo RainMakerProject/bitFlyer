@@ -44,6 +44,7 @@ class BitFlyerRealTime:
 
     def stop(self) -> None:
         self._to_stop = True
+        self._ws_app.close()
 
     def start(self) -> None:
         self._to_stop = False
@@ -52,7 +53,6 @@ class BitFlyerRealTime:
         def run(ws: WebSocketApp) -> None:
             while True:
                 if self._to_stop:
-                    ws.close()
                     break
 
                 ws.run_forever(ping_interval=30, ping_timeout=10)
