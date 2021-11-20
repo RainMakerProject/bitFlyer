@@ -39,13 +39,22 @@ class BitFlyerRealTime:
         )
 
         self._thread: Optional[Thread] = None
+        self._to_stop = True
         self._message_handler_of: Dict[str, Callable] = {}
 
+    def stop(self) -> None:
+        self._to_stop = True
+
     def start(self) -> None:
+        self._to_stop = False
         logger.info('websocket server is now starting')
 
         def run(ws: WebSocketApp) -> None:
             while True:
+                if self._to_stop:
+                    ws.close()
+                    break
+
                 ws.run_forever(ping_interval=30, ping_timeout=10)
                 time.sleep(1)
 
