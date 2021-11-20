@@ -1,4 +1,4 @@
-from typing import Callable, Dict
+from typing import Callable, Dict, Optional
 
 import json
 import requests
@@ -38,6 +38,7 @@ class BitFlyerRealTime:
             on_close=self._on_close,
         )
 
+        self._thread: Optional[Thread] = None
         self._message_handler_of: Dict[str, Callable] = {}
 
     def start(self) -> None:
@@ -50,8 +51,12 @@ class BitFlyerRealTime:
 
         t = Thread(target=run, args=(self._ws_app, ))
         t.start()
+        self._thread = t
 
         logger.info('websocket server has started')
+
+    def is_alive(self) -> bool:
+        return self._thread is not None and self._thread.is_alive()
 
     def subscribe(self, channel: Channel, product_code: ProductCode, handler: Callable) -> None:
         channel_name = f'{channel.name}_{product_code.name}'
