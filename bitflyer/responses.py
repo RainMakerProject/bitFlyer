@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from dataclasses import dataclass
 from datetime import datetime
@@ -42,3 +42,10 @@ class Ticker:
             'state': getattr(State, '_'.join(data['state'].split())),
             'timestamp': timestamp,
         }})
+
+
+@dataclass(frozen=True)
+class Balance:
+    currency_code: str
+    amount: float
+    available: float

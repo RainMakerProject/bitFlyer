@@ -1,5 +1,7 @@
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, List, Optional
 
+import hmac
+import hashlib
 import json
 import requests
 import time
@@ -11,18 +13,50 @@ import websocket
 from websocket import WebSocketApp, WebSocketConnectionClosedException
 
 from .enumerations import ProductCode, Channel, PublicChannel
-from .responses import Ticker
+from .responses import Ticker, Balance
 
 logger = logging.getLogger(__name__)
 
 
 class BitFlyer:
-    URL = 'https://api.bitflyer.com/v1'
+    URL_BASE = 'https://api.bitflyer.com'
+    API_VERSION = 'v1'
+
+    def __init__(self, access_key: Optional[str] = None, access_secret: Optional[str] = None) -> None:
+        self._access_key = access_key
+        self._access_secret = access_secret
 
     def get_ticker(self, product_code: ProductCode) -> Ticker:
-        response = requests.get(f'{self.URL}/ticker', params={'product_code': product_code.name})
+        response = requests.get(
+            f'{self.URL_BASE}/{self.API_VERSION}/ticker', params={'product_code': product_code.name})
         response.raise_for_status()
         return Ticker.from_dict(response.json())
+
+    def _get_auth_header(self, http_method: str, request_path: str, request_body: str) -> Dict[str, str]:
+        if not self._access_key or not self._access_secret:
+            raise requests.exceptions.HTTPError('No credential is configured')
+
+        access_timestamp = str(time.time())
+        text = f'{access_timestamp}{http_method.upper()}{request_path}{request_body}'
+        access_sign = hmac.new(self._access_secret.encode(), text.encode(), hashlib.sha256).hexdigest()
+
+        return {
+            'ACCESS-KEY': self._access_key,
+            'ACCESS-TIMESTAMP': access_timestamp,
+            'ACCESS-SIGN': access_sign,
+            'Content-Type': 'application/json',
+        }
+
+    def _request(self, http_method: str, request_path: str, request_body: str) -> requests.Response:
+        path = f'/{self.API_VERSION}/{request_path}'
+        response = getattr(requests, http_method.lower())(
+            f'{self.URL_BASE}{path}', headers=self._get_auth_header('GET', path, request_body))
+        response.raise_for_status()
+        return response
+
+    def get_balance(self) -> List[Balance]:
+        response = self._request('GET', f'me/getbalance', '')
+        return [Balance(**r) for r in response.json()]
 
 
 class BitFlyerRealTime:
@@ -58,7 +92,7 @@ class BitFlyerRealTime:
                 ws.run_forever(ping_interval=30, ping_timeout=10)
                 time.sleep(1)
 
-        t = Thread(target=run, args=(self._ws_app, ))
+        t = Thread(target=run, args=(self._ws_app,))
         t.start()
         self._thread = t
 
