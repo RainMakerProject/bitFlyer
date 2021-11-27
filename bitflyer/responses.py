@@ -49,3 +49,8 @@ class Balance:
     currency_code: str
     amount: float
     available: float
+
+
+@dataclass(frozen=True)
+class ChildOrderResponse:
+    child_order_acceptance_id: str

@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Literal, Optional
 
 import hmac
 import hashlib
@@ -13,7 +13,8 @@ import websocket
 from websocket import WebSocketApp, WebSocketConnectionClosedException
 
 from .enumerations import ProductCode, Channel, PublicChannel
-from .responses import Ticker, Balance
+from .requests import ChildOrderRequest
+from .responses import Ticker, Balance, ChildOrderResponse
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +28,7 @@ class BitFlyer:
         self._access_secret = access_secret
 
     def get_ticker(self, product_code: ProductCode) -> Ticker:
-        response = requests.get(
-            f'{self.URL_BASE}/{self.API_VERSION}/ticker', params={'product_code': product_code.name})
-        response.raise_for_status()
+        response = self._request('GET', 'ticker', request_params={'product_code': product_code.name}, auth=False)
         return Ticker.from_dict(response.json())
 
     def _get_auth_header(self, http_method: str, request_path: str, request_body: str) -> Dict[str, str]:
@@ -47,16 +46,39 @@ class BitFlyer:
             'Content-Type': 'application/json',
         }
 
-    def _request(self, http_method: str, request_path: str, request_body: str) -> requests.Response:
+    def _request(
+            self, http_method: str, request_path: str,
+            request_body: Optional[str] = None, request_params: Optional[Dict] = None,
+            auth: bool = True,
+    ) -> requests.Response:
+
         path = f'/{self.API_VERSION}/{request_path}'
-        response = getattr(requests, http_method.lower())(
-            f'{self.URL_BASE}{path}', headers=self._get_auth_header('GET', path, request_body))
-        response.raise_for_status()
+        arguments = {'url': f'{self.URL_BASE}{path}'}
+        if request_body is not None:
+            arguments['data'] = request_body
+        if request_params is not None:
+            arguments['params'] = request_params
+        if auth:
+            arguments['headers'] = self._get_auth_header(
+                http_method, path,
+                request_body if request_body is not None else '',
+            )
+
+        response = getattr(requests, http_method.lower())(**arguments)
+        try:
+            response.raise_for_status()
+        except requests.RequestException as e:
+            logger.error(e.response.text)
+            raise
         return response
 
     def get_balance(self) -> List[Balance]:
-        response = self._request('GET', f'me/getbalance', '')
+        response = self._request('GET', 'me/getbalance')
         return [Balance(**r) for r in response.json()]
+
+    def send_child_order(self, params: ChildOrderRequest) -> ChildOrderResponse:
+        response = self._request('POST', 'me/sendchildorder', request_body=params.to_json())
+        return ChildOrderResponse(**response.json())
 
 
 class BitFlyerRealTime:
