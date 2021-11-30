@@ -4,6 +4,7 @@ import hmac
 import hashlib
 import json
 import requests
+import urllib
 import time
 import logging
 
@@ -14,7 +15,7 @@ from websocket import WebSocketApp, WebSocketConnectionClosedException
 
 from .enumerations import ProductCode, Channel, PublicChannel
 from .requests import ChildOrderRequest
-from .responses import Ticker, Balance, ChildOrderResponse
+from .responses import Ticker, Balance, Position, ChildOrderResponse
 
 logger = logging.getLogger(__name__)
 
@@ -31,12 +32,18 @@ class BitFlyer:
         response = self._request('GET', 'ticker', request_params={'product_code': product_code.name}, auth=False)
         return Ticker.from_dict(response.json())
 
-    def _get_auth_header(self, http_method: str, request_path: str, request_body: str) -> Dict[str, str]:
+    def _get_auth_header(
+            self, http_method: str, request_path: str, request_body: str, request_params: Dict,
+    ) -> Dict[str, str]:
         if not self._access_key or not self._access_secret:
             raise requests.exceptions.HTTPError('No credential is configured')
 
+        payload = request_body
+        if http_method.upper() != 'POST' and request_params:
+            payload = f'?{urllib.parse.urlencode(request_params)}'
+
         access_timestamp = str(time.time())
-        text = f'{access_timestamp}{http_method.upper()}{request_path}{request_body}'
+        text = f'{access_timestamp}{http_method.upper()}{request_path}{payload}'
         access_sign = hmac.new(self._access_secret.encode(), text.encode(), hashlib.sha256).hexdigest()
 
         return {
@@ -61,7 +68,7 @@ class BitFlyer:
         if auth:
             arguments['headers'] = self._get_auth_header(
                 http_method, path,
-                request_body if request_body is not None else '',
+                request_body or '', request_params or {},
             )
 
         response = getattr(requests, http_method.lower())(**arguments)
@@ -75,6 +82,10 @@ class BitFlyer:
     def get_balance(self) -> List[Balance]:
         response = self._request('GET', 'me/getbalance')
         return [Balance(**r) for r in response.json()]
+
+    def get_positions(self) -> List[Position]:
+        response = self._request('GET', 'me/getpositions', request_params={'product_code': ProductCode.FX_BTC_JPY.name})
+        return [Position.from_dict(r) for r in response.json()]
 
     def send_child_order(self, params: ChildOrderRequest) -> ChildOrderResponse:
         response = self._request('POST', 'me/sendchildorder', request_body=params.to_json())

@@ -1,9 +1,21 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, Literal
 
 from dataclasses import dataclass
 from datetime import datetime
 
 from .enumerations import ProductCode, State
+
+
+def get_datetime_from(ts: str) -> datetime:
+    if ts.endswith('Z'):
+        ts = ts[:-1]
+    if (sub := len(ts.split('.')[-1]) - 6) > 0:
+        ts = ts[:-sub]
+    timestamp_str = f'{ts}+00:00'
+    try:
+        return datetime.fromisoformat(timestamp_str)
+    except ValueError:
+        return datetime.strptime(timestamp_str, '%Y-%m-%dT%H:%M:%S.%f%z')
 
 
 @dataclass(frozen=True)
@@ -26,21 +38,10 @@ class Ticker:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Ticker':
-        ts: str = data['timestamp']
-        if ts.endswith('Z'):
-            ts = ts[:-1]
-        if (sub := len(ts.split('.')[-1]) - 6) > 0:
-            ts = ts[:-sub]
-        timestamp_str = f'{ts}+00:00'
-        try:
-            timestamp = datetime.fromisoformat(timestamp_str)
-        except ValueError:
-            timestamp = datetime.strptime(timestamp_str, '%Y-%m-%dT%H:%M:%S.%f%z')
-
         return Ticker(**{**data, **{
             'product_code': getattr(ProductCode, data['product_code']),
             'state': getattr(State, '_'.join(data['state'].split())),
-            'timestamp': timestamp,
+            'timestamp': get_datetime_from(data['timestamp']),
         }})
 
 
@@ -49,6 +50,28 @@ class Balance:
     currency_code: str
     amount: float
     available: float
+
+
+@dataclass(frozen=True)
+class Position:
+    product_code: ProductCode
+    side: Literal['BUY', 'SELL']
+    price: float
+    size: float
+    commission: float
+    swap_point_accumulate: float
+    require_collateral: float
+    open_date: datetime  # "2015-11-03T10:04:45.011",
+    leverage: float
+    pnl: float
+    sfd: float
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Position':
+        return cls(**{**data, **{
+            'product_code': getattr(ProductCode, data['product_code']),
+            'open_date': get_datetime_from(data['open_date']),
+        }})
 
 
 @dataclass(frozen=True)
