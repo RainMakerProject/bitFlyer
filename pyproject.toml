@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "bitflyer"
-version = "0.1.6"
+version = "0.1.7"
 description = ""
 authors = ["studio3104 <studio3104.com@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-websocket-client = "^1.2.1"
+websocket-client = "<1"  # For compatibility with `docker-compose`
 requests = "^2.26.0"
 
 [tool.poetry.dev-dependencies]
