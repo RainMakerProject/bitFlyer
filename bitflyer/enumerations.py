@@ -34,18 +34,18 @@ class State(enum.Enum):
 
 
 class Candlestick(enum.Enum):
-    ONE_MINUTE: int = 60
-    FIVE_MINUTES = ONE_MINUTE * 5
-    TEN_MINUTES = ONE_MINUTE * 10
-    FIFTEEN_MINUTES = ONE_MINUTE * 15
-    THIRTY_MINUTES = ONE_MINUTE * 30
+    ONE_MINUTE = 60
+    FIVE_MINUTES = ONE_MINUTE * 5  # noqa
+    TEN_MINUTES = ONE_MINUTE * 10  # noqa
+    FIFTEEN_MINUTES = ONE_MINUTE * 15  # noqa
+    THIRTY_MINUTES = ONE_MINUTE * 30  # noqa
 
-    ONE_HOUR: int = ONE_MINUTE * 60
-    FOUR_HOURS = ONE_HOUR * 4
-    EIGHT_HOURS = ONE_HOUR * 8
+    ONE_HOUR = ONE_MINUTE * 60  # noqa
+    FOUR_HOURS = ONE_HOUR * 4  # noqa
+    EIGHT_HOURS = ONE_HOUR * 8  # noqa
 
-    ONE_DAY: int = ONE_HOUR * 24
-    ONE_WEEK = ONE_DAY * 7
+    ONE_DAY = ONE_HOUR * 24  # noqa
+    ONE_WEEK = ONE_DAY * 7  # noqa
 
 
 chart_types = []
