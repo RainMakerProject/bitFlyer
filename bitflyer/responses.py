@@ -3,7 +3,7 @@ from typing import Any, Dict, Literal
 from dataclasses import dataclass
 from datetime import datetime
 
-from .enumerations import ProductCode, State
+from .enumerations import ProductCode, State, HealthStatus
 
 
 def get_datetime_from(ts: str) -> datetime:
@@ -43,6 +43,15 @@ class Ticker:
             'state': getattr(State, '_'.join(data['state'].split())),
             'timestamp': get_datetime_from(data['timestamp']),
         }})
+
+
+@dataclass(frozen=True)
+class Health:
+    status: HealthStatus
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Health':
+        return cls(getattr(HealthStatus, '_'.join(data['status'].split())))
 
 
 @dataclass(frozen=True)

@@ -15,7 +15,7 @@ from websocket import WebSocketApp, WebSocketConnectionClosedException
 
 from .enumerations import ProductCode, Channel, PublicChannel
 from .requests import ChildOrderRequest
-from .responses import Ticker, Balance, Position, ChildOrderResponse
+from .responses import Ticker, Balance, Position, ChildOrderResponse, Health
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,10 @@ class BitFlyer:
     def get_ticker(self, product_code: ProductCode) -> Ticker:
         response = self._request('GET', 'ticker', request_params={'product_code': product_code.name}, auth=False)
         return Ticker.from_dict(response.json())
+
+    def get_health(self, product_code: ProductCode) -> Health:
+        response = self._request('GET', 'gethealth', request_params={'product_code': product_code.name}, auth=False)
+        return Health.from_dict(response.json())
 
     def _get_auth_header(
             self, http_method: str, request_path: str, request_body: str, request_params: Dict,

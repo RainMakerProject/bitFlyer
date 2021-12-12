@@ -1,6 +1,15 @@
 import enum
 
 
+class HealthStatus(enum.Enum):
+    NORMAL = enum.auto()
+    BUSY = enum.auto()
+    VERY_BUSY = enum.auto()
+    SUPER_BUSY = enum.auto()
+    NO_ORDER = enum.auto()
+    STOP = enum.auto()
+
+
 class Channel(enum.Enum):
     pass
 
