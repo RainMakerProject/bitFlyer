@@ -79,6 +79,7 @@ class Position:
     def from_dict(cls, data: Dict[str, Any]) -> 'Position':
         return cls(**{**data, **{
             'product_code': getattr(ProductCode, data['product_code']),
+            'side': getattr(Side, data['side']),
             'open_date': get_datetime_from(data['open_date']),
         }})
 
