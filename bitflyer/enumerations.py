@@ -21,6 +21,11 @@ class PublicChannel(Channel):
     lightning_executions = enum.auto()
 
 
+class Side(enum.Enum):
+    BUY = enum.auto()
+    SELL = enum.auto()
+
+
 class ProductCode(enum.Enum):
     BTC_JPY = enum.auto()
     XRP_JPY = enum.auto()

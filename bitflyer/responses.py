@@ -1,9 +1,9 @@
-from typing import Any, Dict, Literal
+from typing import Any, Dict
 
 from dataclasses import dataclass
 from datetime import datetime
 
-from .enumerations import ProductCode, State, HealthStatus
+from .enumerations import Side, ProductCode, State, HealthStatus
 
 
 def get_datetime_from(ts: str) -> datetime:
@@ -64,7 +64,7 @@ class Balance:
 @dataclass(frozen=True)
 class Position:
     product_code: ProductCode
-    side: Literal['BUY', 'SELL']
+    side: Side
     price: float
     size: float
     commission: float
