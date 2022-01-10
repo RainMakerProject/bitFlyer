@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bitflyer"
-version = "0.1.12"
+version = "0.1.13"
 description = ""
 authors = ["studio3104 <studio3104.com@gmail.com>"]
 license = "MIT"
