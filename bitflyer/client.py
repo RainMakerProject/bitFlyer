@@ -15,7 +15,7 @@ from websocket import WebSocketApp, WebSocketConnectionClosedException
 
 from .enumerations import ProductCode, Channel, PublicChannel
 from .requests import ChildOrderRequest
-from .responses import Ticker, Balance, Position, ChildOrderResponse, Health
+from .responses import Ticker, Balance, Collateral, Position, ChildOrderResponse, Health
 
 logger = logging.getLogger(__name__)
 
@@ -86,6 +86,10 @@ class BitFlyer:
     def get_balance(self) -> List[Balance]:
         response = self._request('GET', 'me/getbalance')
         return [Balance(**r) for r in response.json()]
+
+    def get_collateral(self) -> Collateral:
+        response = self._request('GET', 'me/getcollateral')
+        return Collateral.from_dict(response.json())
 
     def get_positions(self) -> List[Position]:
         response = self._request('GET', 'me/getpositions', request_params={'product_code': ProductCode.FX_BTC_JPY.name})

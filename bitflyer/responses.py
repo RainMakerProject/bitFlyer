@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from dataclasses import dataclass
 from datetime import datetime
@@ -6,7 +6,10 @@ from datetime import datetime
 from .enumerations import Side, ProductCode, State, HealthStatus
 
 
-def get_datetime_from(ts: str) -> datetime:
+def get_datetime_from(ts: Optional[str]) -> Optional[datetime]:
+    if not ts:
+        return None
+
     if ts.endswith('Z'):
         ts = ts[:-1]
     if (sub := len(ts.split('.')[-1]) - 6) > 0:
@@ -59,6 +62,20 @@ class Balance:
     currency_code: str
     amount: float
     available: float
+
+
+@dataclass(frozen=True)
+class Collateral:
+    collateral: int
+    open_position_pnl: int
+    require_collateral: int
+    keep_rate: float
+    margin_call_amount: int
+    margin_call_due_date: Optional[datetime]  # "2021-09-01T08:00:00"
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Collateral':
+        return cls(**{**data, **{'margin_call_due_date': get_datetime_from(data['margin_call_due_date'])}})
 
 
 @dataclass(frozen=True)
