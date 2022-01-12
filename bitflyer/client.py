@@ -169,7 +169,7 @@ class BitFlyerRealTime:
     def _on_error(self, _: WebSocketApp, error) -> None:
         logger.error(error)
 
-    def _on_close(self, ws: WebSocketApp, close_status_code, close_msg) -> None:
+    def _on_close(self, _: WebSocketApp) -> None:
         logger.info('connection closed')
 
     def _on_open(self, _: WebSocketApp):
