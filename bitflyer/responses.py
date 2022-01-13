@@ -79,6 +79,20 @@ class Collateral:
 
 
 @dataclass(frozen=True)
+class CollateralHistory:
+    id: int
+    currency_code: str
+    change: int
+    reason_code: str
+    amount: int
+    date: datetime
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'CollateralHistory':
+        return cls(**{**data, **{'date': get_datetime_from(data['date'])}})
+
+
+@dataclass(frozen=True)
 class Position:
     product_code: ProductCode
     side: Side

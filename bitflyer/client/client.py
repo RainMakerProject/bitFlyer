@@ -1,3 +1,4 @@
+import dataclasses
 from typing import Dict, List, Optional
 
 import hmac
@@ -8,8 +9,8 @@ import time
 import logging
 
 from bitflyer.enumerations import ProductCode
-from bitflyer.requests import ChildOrderRequest
-from bitflyer.responses import Ticker, Balance, Collateral, Position, ChildOrderResponse, Health
+from bitflyer.requests import ChildOrderRequest, PaginationParams
+from bitflyer.responses import Ticker, Balance, Collateral, CollateralHistory, Position, ChildOrderResponse, Health
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +85,13 @@ class BitFlyer:
     def get_collateral(self) -> Collateral:
         response = self._request('GET', 'me/getcollateral')
         return Collateral.from_dict(response.json())
+
+    def get_collateral_history(self, pagination_params: PaginationParams = PaginationParams()) -> List[CollateralHistory]:
+        response = self._request(
+            'GET', 'me/getcollateralhistory',
+            request_params={k: v for k, v in dataclasses.asdict(pagination_params).items() if v is not None},
+        )
+        return [CollateralHistory.from_dict(r) for r in response.json()]
 
     def get_positions(self) -> List[Position]:
         response = self._request('GET', 'me/getpositions', request_params={'product_code': ProductCode.FX_BTC_JPY.name})

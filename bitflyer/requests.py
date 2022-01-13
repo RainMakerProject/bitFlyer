@@ -24,3 +24,10 @@ class ChildOrderRequest:
             del d['price']
 
         return json.dumps(d)
+
+
+@dataclass(frozen=True)
+class PaginationParams:
+    count: int = 100
+    before: Optional[int] = None
+    after: Optional[int] = None
