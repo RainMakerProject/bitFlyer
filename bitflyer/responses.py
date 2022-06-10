@@ -12,9 +12,9 @@ def get_datetime_from(ts: Optional[str]) -> Optional[datetime]:
 
     if ts.endswith('Z'):
         ts = ts[:-1]
-    if (sub := len(ts.split('.')[-1]) - 6) > 0:
-        ts = ts[:-sub]
-    timestamp_str = f'{ts}+00:00'
+    _ts, _ms, *_ = ts.split('.') + [None]  # noqa
+    ms = _ms[:6] if _ms else '0'
+    timestamp_str = f'{_ts}.{ms}+00:00'
     try:
         return datetime.fromisoformat(timestamp_str)
     except ValueError:
